@@ -1,0 +1,174 @@
+- hosts: slwwwbase
+  user: smartlis
+  become: yes
+  become_method: sudo
+  tasks:
+  
+  - name: Create /etc/apache2/sites-available/elasticsearch.conf file
+    file:
+      path: /etc/apache2/sites-available/elasticsearch.conf
+      state: touch
+  
+  - name: Configure /etc/apache2/sites-available/elasticsearch.conf file
+    blockinfile:
+      path: /etc/apache2/sites-available/elasticsearch.conf
+      block: |
+        Listen 9200
+        
+        <VirtualHost *:9200>
+        
+           ErrorLog /var/log/apache2/elasticsearch-error.log
+           CustomLog /var/log/apache2/elasticsearch-access.log combined
+        
+                   ServerName {{ wwwnodename }}
+                   <Proxy balancer://elasticsearch>
+                          BalancerMember http://{{ elasticnodename }}:9200
+                          Require all granted
+                   </Proxy>
+        
+           ProxyPass / balancer://elasticsearch/
+           ProxyPassReverse / balancer://elasticsearch/
+        
+        </VirtualHost>
+
+  - name: Create /etc/apache2/sites-available/couchdb.conf file
+    file:
+      path: /etc/apache2/sites-available/couchdb.conf
+      state: touch
+  
+  - name: Configure /etc/apache2/sites-available/couchdb.conf file
+    blockinfile:
+      path: /etc/apache2/sites-available/couchdb.conf
+      block: |
+        Listen 5984
+        <VirtualHost *:5984>
+            ErrorLog /var/log/apache2/couchdb-error.log
+            CustomLog /var/log/apache2/couchdb-access.log combined
+        
+            ServerName {{ wwwnodename }}
+            <Proxy balancer://couchdb>
+                   BalancerMember http://{{ couchdbnodename }}:5984
+                   Require all granted
+            </Proxy>
+        
+            ProxyPass / balancer://couchdb/
+            ProxyPassReverse / balancer://couchdb/
+        </VirtualHost>
+        
+  - name: Create /etc/apache2/sites-available/kibana.conf file
+    file:
+      path: /etc/apache2/sites-available/kibana.conf
+      state: touch
+  
+  - name: Configure /etc/apache2/sites-available/kibana.conf file
+    blockinfile:
+      path: /etc/apache2/sites-available/kibana.conf
+      block: |
+        Listen 5601
+        
+        <VirtualHost *:5601>
+                   ErrorLog /var/log/apache2/kibana-error.log
+                   CustomLog /var/log/apache2/kibana-access.log combined
+        
+                   ServerName {{ wwwnodename }}
+                   ProxyPass / balancer://{{ elastickibananode }}:5601/
+                   ProxyPassReverse / balancer://<elasticKibana_hostname>:5601/
+        </VirtualHost>
+        
+  - name: Create /etc/apache2/sites-available/rabbitmq-management.conf file
+    file:
+      path: /etc/apache2/sites-available/rabbitmq-management.conf
+      state: touch
+  
+  - name: Configure /etc/apache2/sites-available/rabbitmq-management.conf file
+    blockinfile:
+      path: /etc/apache2/sites-available/rabbitmq-management.conf
+      block: |
+        Listen 15672
+        
+        <VirtualHost *:15672>
+                   ErrorLog /var/log/apache2/rabbitmq-management-error.log
+                   CustomLog /var/log/apache2/rabbitmq-management.log combined
+        
+                   ServerName {{ wwwnodename }}
+                   <Proxy balancer://rabbitmq-management>
+                          BalancerMember http://{{ rabbitmqnode }}:15672
+                          Require all granted
+                   </Proxy>
+        
+        
+                   ProxyPass / balancer://rabbitmq-management/
+                   ProxyPassReverse / balancer://rabbitmq-management/
+        </VirtualHost>
+        
+  - name: Create /etc/apache2/sites-available/smartlis.conf
+    file:
+      path: /etc/apache2/sites-available/smartlis.conf
+      state: touch
+      
+  - name: Configure /etc/apache2/sites-available/smartlis.conf
+    blockinfile:
+      path: /etc/apache2/sites-available/smartlis.conf
+      block: |
+        <VirtualHost *:80>
+            ErrorLog /var/log/apache2/smartlis-error.log
+            CustomLog /var/log/apache2/smartlis-access.log combined
+        
+            ServerName {{ wwwnodename }}
+            <Proxy balancer://smartlis-backend>
+                    BalancerMember uwsgi://{{ slappnodename }}:9000
+                    Require all granted
+            </Proxy>
+        
+                   #Smartlis UI_NG
+                   ProxyPass /smartlis-ng !
+                   Alias /smartlis-ng      /srv/smartlis/core/frontend/smartlis_ui_ng
+                   <Directory /srv/smartlis/core/frontend/smartlis_ui_ng>
+                                   Options Indexes FollowSymLinks
+                                   AllowOverride None
+                                   Require all granted
+                   </Directory>
+        
+                   #WorkAreas
+                   ProxyPass /workareas !
+                   Alias /workareas      /srv/smartlis/core/frontend/workareas
+                   <Directory /srv/smartlis/core/frontend/workareas>
+                                   Options Indexes FollowSymLinks
+                                   AllowOverride None
+                                   Require all granted
+                   </Directory>
+        
+                   #Microbiology
+                   ProxyPass /bacteriology2016 !
+                   Alias /bacteriology2016      /srv/smartlis/core/frontend/bacteriology2016
+                   <Directory /srv/smartlis/core/frontend/bacteriology2016>
+                                   Options Indexes FollowSymLinks
+                                   AllowOverride None
+                                   Require all granted
+                   </Directory>
+        
+                   #Smartlis Frontend (legacy)
+                   ProxyPass /smartlis http://127.0.0.1/:8080/smartlis
+                   ProxyPassReverse /smartlis http://127.0.0.1/:8080/smartlis
+        
+             #Smattlis Backend
+             ProxyPass / balancer://smartlis-backend/
+             ProxyPassReverse / balancer://smartlis-backend/
+        
+        </VirtualHost>
+        
+  - name: Enable sites
+    become: yes
+    shell: a2ensite {{ item }}
+    with_items:
+      - elasticsearch
+      - couchdb
+      - kibana
+      - rabbitmq-management
+      - smartlis
+      
+  - name: reload apache2 service
+    service:
+      name: apache2
+      state: reloaded
+        

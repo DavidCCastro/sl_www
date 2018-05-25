@@ -1,0 +1,146 @@
+- hosts: slwwwbase
+  user: smartlis
+  become: yes
+  become_method: sudo
+  tasks:
+  
+  - name: Create directories for Smartlis Frontend
+    file:
+      path: "{{ item }}"
+      owner: smartlis
+      group: smartlis
+      state: directory
+    with_items:
+      - /srv/smartlis/core/frontend/workareas
+      - /etc/smartlis/core/frontend/workareas
+      - /srv/smartlis/core/frontend/smartlis_ui_ng
+      - /etc/smartlis/core/frontend/smartlis_ui_ng
+      - /srv/smartlis/core/frontend/bacteriology2016
+      - /etc/smartlis/core/frontend/bacteriology2016
+   
+  - name: Deploy Smartlis web application
+    get_url:
+      url: ftp://192.1.1.181/smartlis/smartlis-1.46.12128-1.war
+      dest: /var/lib/tomcat7/webapps/smartlis.war
+
+  - name: Deploy workareas
+    unarchive:
+      src: ftp://192.1.1.181/smartlis/workareas-1.0.41.tar.gz
+      dest: /srv/smartlis/core/frontend/workareas
+      remote_src: yes
+      
+  - name: Deploy Smartlis UI_NG
+    unarchive:
+      src: ftp://192.1.1.181/smartlis/smartlis_ui_ng-1.2.2-test.19.tar.gz
+      dest: /srv/smartlis/core/frontend/smartlis_ui_ng
+      remote_src: yes
+
+  - name: Deploy Microbiology
+    unarchive:
+      src: ftp://192.1.1.181/smartlis/bacteriology2016-1.0.19.tar.gz
+      dest: /srv/smartlis/core/frontend/bacteriology2016
+      remote_src: yes
+      
+  - name: Configure /var/lib/tomcat7/webapps/smartlis/scripts/config.js file
+    blockinfile:
+      path: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
+      block: |
+        var django = { // url de acceso a django
+                    url: "{{ local_ip }}"}
+            };
+            var printengine = { // url de acceso al printengine
+                    url : "http://168.144.82.16:8080/printengine/"
+            };
+            var urlhelp = { // url de acceso al help
+                    url : "http://www.helpconsole.com/smartLIS/Static/default.htm",
+                    wiki : "http://omnilab2.dyndns-remote.com:15000/wikilab/index.php/"
+            };
+            var application = {
+                    ignoreCatalog : "false",
+                    // Nombre del skin.
+                    // Uno de los siguientes valores: 'red', 'green', 'orange'.
+                    // Vacío carga skin por defecto.
+                    skinName : "blue",
+                    showLaps: "true",
+                    enableChat: "false",
+                    // Por defecto se muestran los comentarios por sección.
+                    showSectionComments: "true",
+                    // Tiempo que se muestra un mensaje (en milisegundos).
+                    messageTimeout: 1000
+            };
+   
+  - name: Configure /var/lib/tomcat7/webapps/smartlis/scripts/config.js permissions
+    file:
+      path: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
+      owner: smartlis
+      group: smartlis
+  
+  - name: Create /etc/smartlis/core/frontend/legacy directory
+    file:
+      path: /etc/smartlis/core/frontend/legacy
+      state: directory
+  
+  - name: Create symbolic link for config.js file
+    file:
+      src: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
+      dest: /etc/smartlis/core/frontend/legacy/config.js
+      state: link
+      
+  - name: Configure Workareas frontend
+    become: yes
+    shell: cp /srv/smartlis/core/frontend/workareas/js/sl_config.js.sample /srv/smartlis/core/frontend/workareas/js/sl_config.js
+    
+  - name: Configure /srv/smartlis/core/frontend/workareas/js/sl_config.js file
+    blockinfile:
+      path: /srv/smartlis/core/frontend/workareas/js/sl_config.js
+      block: |
+        slSettings = {
+          dj_server: "{{ local_ip }}"
+          user: "suser"
+        }
+     
+  - name: Create symbolic link for sl_config.js file
+    file:
+      src: /srv/smartlis/core/frontend/workareas/js/sl_config.js
+      dest: /etc/smartlis/core/frontend/workareas/sl_config.js
+      state: link
+      
+  - name: Delete Microbiology config.local.js file
+    file:
+      path: /srv/smartlis/core/frontend/bacteriology2016/javascripts/config.local.js
+      state: absent
+      
+  - name: Create Microbiology config.local.js file
+    file:
+      path: /srv/smartlis/core/frontend/bacteriology2016/javascripts/config.local.js
+      state: touch
+      
+  - name: Configure Microbiology config.local.js file
+    blockinfile:
+      path: /srv/smartlis/core/frontend/bacteriology2016/javascripts/config.local.js
+      block: |
+        'use strict';
+
+        app.constant('SL_CONFIG', {
+          app: {
+            baseUrl: '{{ local_ip }}'
+            lang: 'en'
+          }
+        })
+      
+  - name: Create symbolic link for config.local.js file
+    file:
+      src: /srv/smartlis/core/frontend/bacteriology2016/javascripts/config.local.js
+      dest: /etc/smartlis/core/frontend/bacteriology2016/config.local.js
+      state: link
+      
+  - name: Reload apache2 service
+    service:
+      name: apache2
+      state: reloaded
+      
+  - name: Restart apache2 service
+    service:
+      name: apache2
+      state: restarted
+      

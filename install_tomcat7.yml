@@ -1,0 +1,15 @@
+- hosts: slwwwbase
+  user: smartlis
+  become: yes
+  become_method: sudo
+  tasks:
+  
+  - name: Install Tomcat7
+    apt:
+      name: tomcat7
+      state: present
+  
+  - name: Start tomcat7 service
+    service:
+      name: tomcat7
+      state: started
