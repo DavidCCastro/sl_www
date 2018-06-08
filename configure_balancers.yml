@@ -20,9 +20,9 @@
            ErrorLog /var/log/apache2/elasticsearch-error.log
            CustomLog /var/log/apache2/elasticsearch-access.log combined
         
-                   ServerName {{ wwwnodename }}
+                   ServerName 192.1.1.220
                    <Proxy balancer://elasticsearch>
-                          BalancerMember http://{{ elasticnodename }}:9200
+                          BalancerMember http://192.1.1.222:9200
                           Require all granted
                    </Proxy>
         
@@ -45,9 +45,9 @@
             ErrorLog /var/log/apache2/couchdb-error.log
             CustomLog /var/log/apache2/couchdb-access.log combined
         
-            ServerName {{ wwwnodename }}
+            ServerName 192.1.1.220
             <Proxy balancer://couchdb>
-                   BalancerMember http://{{ couchdbnodename }}:5984
+                   BalancerMember http://192.1.1.221:5984
                    Require all granted
             </Proxy>
         
@@ -70,9 +70,9 @@
                    ErrorLog /var/log/apache2/kibana-error.log
                    CustomLog /var/log/apache2/kibana-access.log combined
         
-                   ServerName {{ wwwnodename }}
-                   ProxyPass / balancer://{{ elastickibananode }}:5601/
-                   ProxyPassReverse / balancer://<elasticKibana_hostname>:5601/
+                   ServerName 192.1.1.220
+                   ProxyPass / balancer://192.1.1.222:5601/
+                   ProxyPassReverse / balancer://192.1.1.222:5601/
         </VirtualHost>
         
   - name: Create /etc/apache2/sites-available/rabbitmq-management.conf file
@@ -90,9 +90,9 @@
                    ErrorLog /var/log/apache2/rabbitmq-management-error.log
                    CustomLog /var/log/apache2/rabbitmq-management.log combined
         
-                   ServerName {{ wwwnodename }}
+                   ServerName 192.1.1.220
                    <Proxy balancer://rabbitmq-management>
-                          BalancerMember http://{{ rabbitmqnode }}:15672
+                          BalancerMember http://192.1.1.224:15672
                           Require all granted
                    </Proxy>
         
@@ -114,9 +114,9 @@
             ErrorLog /var/log/apache2/smartlis-error.log
             CustomLog /var/log/apache2/smartlis-access.log combined
         
-            ServerName {{ wwwnodename }}
+            ServerName 192.1.1.220
             <Proxy balancer://smartlis-backend>
-                    BalancerMember uwsgi://{{ slappnodename }}:9000
+                    BalancerMember uwsgi://192.1.1.225:9000
                     Require all granted
             </Proxy>
         
