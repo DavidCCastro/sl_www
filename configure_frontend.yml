@@ -46,7 +46,7 @@
       path: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
       block: |
         var django = { // url de acceso a django
-                    url: "{{ local_ip }}"}
+                    url: "192.1.1.220"}
             };
             var printengine = { // url de acceso al printengine
                     url : "http://168.144.82.16:8080/printengine/"
@@ -95,7 +95,7 @@
       path: /srv/smartlis/core/frontend/workareas/js/sl_config.js
       block: |
         slSettings = {
-          dj_server: "{{ local_ip }}"
+          dj_server: "192.1.1.220"
           user: "suser"
         }
      
@@ -123,7 +123,7 @@
 
         app.constant('SL_CONFIG', {
           app: {
-            baseUrl: '{{ local_ip }}'
+            baseUrl: '192.1.1.220'
             lang: 'en'
           }
         })
