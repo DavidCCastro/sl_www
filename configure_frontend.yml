@@ -47,7 +47,7 @@
     
   - name: Create config.js file
     file:
-      path: var/lib/tomcat7/webapps/smartlis/scripts/config.js
+      path: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
       state: touch
       
   - name: Configure /var/lib/tomcat7/webapps/smartlis/scripts/config.js file
