@@ -148,8 +148,8 @@
                    </Directory>
         
                    #Smartlis Frontend (legacy)
-                   ProxyPass /smartlis http://127.0.0.1/:8080/smartlis
-                   ProxyPassReverse /smartlis http://127.0.0.1/:8080/smartlis
+                   ProxyPass /smartlis http://127.0.0.1:8080/smartlis
+                   ProxyPassReverse /smartlis http://127.0.0.1:8080/smartlis
         
              #Smattlis Backend
              ProxyPass / balancer://smartlis-backend/
