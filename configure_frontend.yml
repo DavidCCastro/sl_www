@@ -41,6 +41,10 @@
       dest: /srv/smartlis/core/frontend/bacteriology2016
       remote_src: yes
       
+  - name: Move conifg.js file
+    become: yes
+    shell: mv /var/lib/tomcat7/webapps/smartlis/scripts/config.js /var/lib/tomcat7/webapps/smartlis/scripts/config.js.bak
+      
   - name: Configure /var/lib/tomcat7/webapps/smartlis/scripts/config.js file
     blockinfile:
       path: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
@@ -86,9 +90,10 @@
       dest: /etc/smartlis/core/frontend/legacy/config.js
       state: link
       
-  - name: Configure Workareas frontend
-    become: yes
-    shell: cp /srv/smartlis/core/frontend/workareas/js/sl_config.js.sample /srv/smartlis/core/frontend/workareas/js/sl_config.js
+  - name: Create /srv/smartlis/core/frontend/workareas/js/sl_config.js file
+    file:
+      path: /srv/smartlis/core/frontend/workareas/js/sl_config.js
+      state: touch
     
   - name: Configure /srv/smartlis/core/frontend/workareas/js/sl_config.js file
     blockinfile:
