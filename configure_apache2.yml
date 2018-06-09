@@ -167,7 +167,7 @@
     - name: Configure fqdn.conf file
       lineinfile:
         path: /etc/apache2/conf-available/fqdn.conf
-        line: 'ServerName $HOSTNAME'
+        line: 'ServerName 192.1.1.220'
         
     - name: Final apache2 configuration
       become: yes
