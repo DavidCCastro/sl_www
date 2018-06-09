@@ -44,6 +44,11 @@
   - name: Move conifg.js file
     become: yes
     shell: mv /var/lib/tomcat7/webapps/smartlis/scripts/config.js /var/lib/tomcat7/webapps/smartlis/scripts/config.js.bak
+    
+  - name: Create config.js file
+    file:
+      path: var/lib/tomcat7/webapps/smartlis/scripts/config.js
+      state: touch
       
   - name: Configure /var/lib/tomcat7/webapps/smartlis/scripts/config.js file
     blockinfile:
