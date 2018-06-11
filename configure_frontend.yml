@@ -55,7 +55,7 @@
       path: /var/lib/tomcat7/webapps/smartlis/scripts/config.js
       block: |
         var django = { // url de acceso a django
-                    url: "192.1.1.220"}
+                    url: "192.1.1.220"
             };
             var printengine = { // url de acceso al printengine
                     url : "http://168.144.82.16:8080/printengine/"
