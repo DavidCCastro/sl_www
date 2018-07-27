@@ -147,6 +147,17 @@
       dest: /etc/smartlis/core/frontend/bacteriology2016/config.local.js
       state: link
       
+  - name: Change permissions /srv/smartlis/ and /etc/smartlis/ directories
+    file:
+      path: "{{ item }}"
+      owner: smartlis
+      group: smartlis
+      recurse: yes
+      state: directory
+    with_items:
+      - /srv/smartlis/
+      - /etc/smartlis/
+      
   - name: Reload apache2 service
     service:
       name: apache2
