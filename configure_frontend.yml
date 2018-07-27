@@ -106,7 +106,7 @@
       path: /srv/smartlis/core/frontend/workareas/js/sl_config.js
       block: |
         slSettings = {
-          dj_server: "http://192.1.1.220/"
+          dj_server: "http://192.1.1.220/",
           user: "suser"
         }
       marker: "// ANSIBLE MANAGED BLOCK"
